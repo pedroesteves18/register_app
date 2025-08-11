@@ -2,23 +2,33 @@ import Paciente from "../model/paciente.js";
 import {Op} from 'sequelize'
 const pacienteService = {
     createPaciente: async (data, userId) => {
-        const paciente = await pacienteService.fetchMe(data.nome,data.dot,userId)
-        if(paciente){
-            return null
-        }
+        const [day, month, year] = data.dot.split('/');
+        data.dot = `${year}-${month}-${day}`;
         return await Paciente.create({
             nome: data.nome,
             dot: data.dot,
+            sexo: data.sexo,
             userId: userId
         })
     },
-    fetchMe: async (nome, dot,userId) => {
+    fetchPaciente: async (pacienteId) => {
+        return await Paciente.findByPk(pacienteId)
+    },
+    fetchPacienteByName: async (nome) => {
         return await Paciente.findOne({
-            [Op.and]: [
-                {nome: nome},
-                {dot: dot},
-                {userId: userId}
-            ]
+            where:{
+                nome: nome
+            }
         })
+    },
+    deletePaciente: async (pacienteId) => {
+        return await Paciente.destroy({
+            where:{
+                id: pacienteId
+            }
+        })
+
     }
 }
+
+export default pacienteService

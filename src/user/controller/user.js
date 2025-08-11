@@ -1,6 +1,6 @@
 
 import userService from "../service/user.js";
-import {generateToken} from "../../global/auth.js";
+import { generateToken } from "../../global/generateToken.js";
 
 const userController = {
     createDefaultUser: async (req,res) => {
