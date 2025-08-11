@@ -1,10 +1,10 @@
 import sequelize from "../../../config/database.js";
 import { DataTypes } from 'sequelize';
-
+import  Cirurgia  from '../../cirurgia/model/cirurgia.js'
 
 const Paciente = sequelize.define('Paciente', {
     nome: {
-        type: DataTypes.STRING(),
+        type: DataTypes.STRING,
         allowNull: false,
     },
     dot: {
@@ -16,5 +16,14 @@ const Paciente = sequelize.define('Paciente', {
         allowNull: true
     }
 })
+
+Paciente.hasMany(Cirurgia, {foreignKey: 'pacienteId'})
+Cirurgia.belongsTo(Paciente,{
+  foreignKey: 'pacienteId',
+  as: 'paciente',
+  onDelete: 'CASCADE'
+})
+
+
 
 export default Paciente
