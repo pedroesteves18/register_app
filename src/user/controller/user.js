@@ -16,6 +16,15 @@ const userController = {
             return res.status(500).send({ error: `Error creating default user: ${err.message}` });
         }
     },
+    createUser: async (req,res) => {
+        try{
+            const user = await userService.createUser(req.body.access)
+            if(!user) return res.status(401).send({message: 'User not created'})
+            return res.status(200).send({message: 'User Created!'})
+        }catch(err){
+            return res.status(500).send({ error: `Error creating user: ${err.message}` });
+        }
+    },
     login: async (req,res) => {
         const { access } = req.body
         try{

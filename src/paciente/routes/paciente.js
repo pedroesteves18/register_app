@@ -1,6 +1,6 @@
 import pacienteController from "../controller/paciente.js";
 import verifyToken from '../../global/verifyToken.js'
-import verifyPacienteOwner from "../../global/verifyPacienteOwner.js";
+import verifyPacienteOwner from "./middlewares/verifyPacienteOwner.js"
 import { Router } from 'express'
 const router = Router()
 

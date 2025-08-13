@@ -1,4 +1,4 @@
-import pacienteService from "../paciente/service/paciente.js"
+import pacienteService from "../../service/paciente.js"
 
 const verifyPacienteOwner = async (req,res,next) => {
     try{
