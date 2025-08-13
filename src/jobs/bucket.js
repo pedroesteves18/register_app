@@ -27,17 +27,18 @@ const bucketImageUpload = async (file) => {
         throw new Error(`Error uploading file: ${error.message}`);
     }
 };
-
-const s3Delete = async (fileName) => {
+const s3Delete = async (url) => {
+    const key = url.split('.amazonaws.com/')[1];
+    if (!key) throw new Error("Invalid S3 URL");
     const params = {
         Bucket: process.env.AWS_BUCKET_NAME,
-        Key: fileName,
+        Key: key,
     };
     
     try {
         await s3.deleteObject(params).promise();
     } catch (error) {
-        throw new Error(`Error deleting file from S3: ${error.message}`);
+        throw new Error('Error deleting file from AWS');
     }
 };
 

@@ -22,13 +22,46 @@ const cirurgiaService = {
             }
         })
     },
-    deleteCirurgia: async (cirurgiaId) => {
-        return await Cirurgia.destroy({
-            where:{
-                id: cirurgiaId
+    deleteCirurgia: async (cirurgia) => {
+        const isDeleted = await cirurgiaService.deletePictures(cirurgia.pics)
+        if(!isDeleted) return null
+        let destroyed = await Cirurgia.destroy({
+            where: {
+                id: cirurgia.id
             }
         })
+        return destroyed
     },  
+    fetchCirurgia: async (cirurgiaId) => {
+        return await Cirurgia.findByPk(cirurgiaId)
+    },
+    updateCirurgia: async (data) => {
+        const urls = data.urls
+        const isDeleted = await cirurgiaService.deletePictures(urls)
+        if(!isDeleted) return null
+
+        const {uploadedUrls, errors} = await cirurgiaService.insertPictures(data.pics)
+        if(errors) return null
+        const beforeUpdate = await cirurgiaService.fetchCirurgia(data.id)
+        if(data.descrição === undefined) data.descrição = beforeUpdate.descrição
+        if(data.data === undefined) data.data = beforeUpdate.data
+        if(data.paciente === undefined) data.paciente = beforeUpdate.paciente
+        
+        if(data.data) data.data = pacienteService.formatDate(data.data)
+        return await Cirurgia.update({
+            descrição: data.descrição,
+            data: data.data,
+            fotos: uploadedUrls,
+            paciente: data.paciente
+        })
+    },
+    deletePictures: async (pictures) => {
+        for(const picture of pictures){
+            const isDeleted = await bucket.s3Delete(picture)
+            if(!isDeleted) return null
+        }
+        return true
+    },
     insertPictures: async (pictures) => {
         const results = await Promise.all(pictures.map(async (picture) => {
             try {

@@ -23,16 +23,46 @@ const userService = {
            throw new Error('User not found');
         }
         return user;
-    },
+        },
     createDefaultUser: async () => {
-        const access = process.env.DEFAULT_USER_ACCESS;
-        if (!access) {
-            throw new Error('Default user access not defined in environment variables');
+        const access1 = process.env.DEFAULT_USER_ACCESS;
+        const access2 = process.env.DEFAULT_USER_2;
+
+        const users = await User.findAll(); 
+
+        let user1 = null;
+        let user2 = null;
+
+        for (const user of users) {
+            if (!user1 && await userService.compareAccess(access1, user.access)) {
+                user1 = user;
+            }
+            if (!user2 && await userService.compareAccess(access2, user.access)) {
+                user2 = user;
+            }
+            if (user1 && user2) break;
         }
-        const user = await userService.createUser(process.env.DEFAULT_USER_ACCESS);
-        console.log(user.access)
-        return user;
+
+        let user1Created = false;
+        let user2Created = false;
+
+        if (!user1) {
+            user1 = await userService.createUser(access1);
+            user1Created = true;
+        }
+
+        if (!user2) {
+            user2 = await userService.createUser(access2);
+            user2Created = true;
+        }
+
+        return {
+            user1,
+            user2,
+            created: user1Created || user2Created
+        };
     },
+
     login: async (access) => {
         const users = await User.findAll()
         for(const user of users){

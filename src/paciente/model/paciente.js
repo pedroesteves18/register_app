@@ -14,6 +14,18 @@ const Paciente = sequelize.define('Paciente', {
     sexo: {
         type: DataTypes.ENUM('masc','fem'),
         allowNull: true
+    },
+    hospital: {
+        type: DataTypes.STRING(),
+        allowNull: true
+    },
+    registro: {
+        type: DataTypes.STRING(),
+        allowNull: true
+    },
+    historico: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 })
 
