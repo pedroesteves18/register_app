@@ -43,27 +43,29 @@ const cirurgiaService = {
         const urls = data.url || data.urls
         const isDeleted = await cirurgiaService.deletePictures(urls)
         if(!isDeleted) return null
+
         const {uploadedUrls, errors} = await cirurgiaService.insertPictures(data.pics)
         if(errors.length > 0) return errors
+
         const beforeUpdate = await cirurgiaService.fetchCirurgia(data.id)
         beforeUpdate.fotos = beforeUpdate.fotos.filter(
                                 foto => !uploadedUrls.includes(foto)
                                 );
         const totalUrls = [
-        ...uploadedUrls,
-        ...beforeUpdate.fotos.filter(foto => !urls.includes(foto))
-        ];
+            ...uploadedUrls,
+            ...beforeUpdate.fotos.filter(foto => !urls.includes(foto))
+            ]
+
         if(data.descricao === undefined) data.descricao = beforeUpdate.descrição
-        if(data.data === undefined) data.data = beforeUpdate.data
-        if(data.paciente === undefined) data.paciente = beforeUpdate.paciente
-        
         if(data.data) data.data = pacienteService.formatDate(data.data)
+
         return await Cirurgia.update({
             descrição: data.descricao,
             data: data.data,
             fotos: totalUrls,
             paciente: data.paciente
-        },{
+        },
+        {
             where: {
                 id: data.id
             }
@@ -73,8 +75,6 @@ const cirurgiaService = {
         if(!pictures) return true
         if(!Array.isArray(pictures)) pictures = [pictures]
         for(const picture of pictures){
-            console.log('teste')
-            console.log(picture)
             const isDeleted = await bucket.s3Delete(picture)
             if(!isDeleted) return null
         }
@@ -82,7 +82,7 @@ const cirurgiaService = {
     },
     insertPictures: async (pictures) => {
         if(!Array.isArray(pictures)) pictures = [pictures]
-        console.log(pictures)
+
         const results = await Promise.all(pictures.map(async (picture) => {
             try {
                 const uploadedUrl = await bucket.bucketImageUpload(picture);

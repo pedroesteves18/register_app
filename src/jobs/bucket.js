@@ -21,6 +21,7 @@ const bucketImageUpload = async (file) => {
         if (!data || !data.Location) {
             throw new Error('File uploading to AWS failed');
         }
+        console.log(data)
         return data.Location;
     } catch (error) {
         throw new Error(`Error uploading file: ${error.message}`);

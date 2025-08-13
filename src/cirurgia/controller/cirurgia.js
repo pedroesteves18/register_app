@@ -29,11 +29,9 @@ const cirurgiaController = {
             if(!user) return res.status(401).send({msg:"User not found"})
             const isUpdated = await cirurgiaService.updateCirurgia(data)
             if(!isUpdated) return res.status(400).send({msg:"Error while updating Cirurgia"})
-            
             return res.status(200).send({msg:"Cirurgia updated"})
-
         }catch(err){
-            return res.status(500).send({msg:"Error while updating a 'Cirurgia'", err: err.message}) 
+              return res.status(500).send({msg:"Error while removing a Cirurgia"})
         }
     },
     deleteCirurgia: async (req,res) => {
