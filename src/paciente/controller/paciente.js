@@ -9,7 +9,7 @@ const pacienteController = {
             const data = req.body
             const alreadyCreated = await pacienteService.fetchPacienteByName(data.nome)
             if(alreadyCreated) return res.status(400).send({msg:"Paciente already exists!"})
-            const paciente = await pacienteService.createPaciente(data,user.id)
+            const paciente = await pacienteService.createPaciente(data,user)
             if(!paciente) return res.status(403).send({msg:"Error creating Paciente"})
             return res.status(200).send({msg:"Paciente created"})
         }catch(err){
@@ -36,6 +36,16 @@ const pacienteController = {
             return res.status(200).send({msg:"Paciente deleted"})
         }catch(err){
             return res.status(500).send({msg:"Error while removing Paciente"})
+        }
+    },
+    updatePaciente: async (req,res) => {
+        try{
+            const paciente = await pacienteService.fetchPaciente(req.params.id)
+            let data = req.body
+            await pacienteService.updatePaciente(data,paciente.id)
+            return res.status(200).send({msg:"Paciente altered"})
+        }catch(err){
+            return res.status(500).send({msg:"Error while updating Paciente",err:err.message})
         }
     }
 }

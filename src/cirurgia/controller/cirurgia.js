@@ -19,6 +19,30 @@ const cirurgiaController = {
         }catch(err){
             return res.status(500).send({msg:"Error while creating a 'Cirurgia'"})
         }
+    },
+    updateCirurgia: async (req,res) => {
+        try{
+            const data = req.body
+            data.picsInsert = req.files || req.file || []
+            const user = await userService.fetchme(req.user)
+            if(!user) return res.status(401).send({msg:"User not found"})
+            
+            
+
+
+        }catch(err){
+
+        }
+    },
+    deleteCirurgia: async (req,res) => {
+        try{
+            const id = req.params.id
+            const destroyed = await cirurgiaService.deleteCirurgia(id)
+            if(!destroyed) return res.status(400).send({msg:"Error while destroying data"})
+            return res.status(200).send({msg:"Cirurgia was removed"}) 
+        }catch(err){
+            return res.status(500).send({msg:"Error while removing a Cirurgia"})
+        }
     }
 }
 
