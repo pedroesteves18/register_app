@@ -9,5 +9,6 @@ const router = Router()
 router.post('/',BulkUpload,verifyToken,cirurgiaController.createCirurgia)
 router.put('/:id', BulkUpload, verifyToken, cirurgiaController.updateCirurgia)
 router.get('/:id',verifyToken,cirurgiaController.fetchCirurgia)
+router.delete('/:id',verifyToken,cirurgiaController.deleteCirurgia)
 
 export default router

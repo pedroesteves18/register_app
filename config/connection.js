@@ -1,5 +1,7 @@
 import sequelize from "./database.js";
 import User from "../src/user/model/user.js";
+import Paciente from "../src/paciente/model/paciente.js";
+import Cirurgia from "../src/cirurgia/model/cirurgia.js";
 
 const connection = async () => {
   try {
