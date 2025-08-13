@@ -37,6 +37,7 @@ const s3Delete = async (url) => {
     
     try {
         await s3.deleteObject(params).promise();
+        return 'deleted'
     } catch (error) {
         throw new Error('Error deleting file from AWS');
     }
