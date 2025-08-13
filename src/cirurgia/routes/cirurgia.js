@@ -7,6 +7,7 @@ const BulkUpload = multer().array('pics',20)
 const router = Router()
 
 router.post('/',BulkUpload,verifyToken,cirurgiaController.createCirurgia)
-
+router.put('/:id', BulkUpload, verifyToken, cirurgiaController.updateCirurgia)
+router.get('/:id',verifyToken,cirurgiaController.fetchCirurgia)
 
 export default router
