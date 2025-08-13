@@ -33,56 +33,36 @@ const cirurgiaService = {
         return destroyed
     },  
     fetchCirurgia: async (cirurgiaId) => {
-        return await Cirurgia.findOne({
-            where: {
-                id: cirurgiaId
-            }
-        })
+        return await Cirurgia.findByPk(cirurgiaId)
     },
     updateCirurgia: async (data) => {
-        const urls = data.url || data.urls
+        const urls = data.urls
         const isDeleted = await cirurgiaService.deletePictures(urls)
         if(!isDeleted) return null
+
         const {uploadedUrls, errors} = await cirurgiaService.insertPictures(data.pics)
-        if(errors.length > 0) return errors
+        if(errors) return null
         const beforeUpdate = await cirurgiaService.fetchCirurgia(data.id)
-        beforeUpdate.fotos = beforeUpdate.fotos.filter(
-                                foto => !uploadedUrls.includes(foto)
-                                );
-        const totalUrls = [
-        ...uploadedUrls,
-        ...beforeUpdate.fotos.filter(foto => !urls.includes(foto))
-        ];
-        if(data.descricao === undefined) data.descricao = beforeUpdate.descrição
+        if(data.descrição === undefined) data.descrição = beforeUpdate.descrição
         if(data.data === undefined) data.data = beforeUpdate.data
         if(data.paciente === undefined) data.paciente = beforeUpdate.paciente
         
         if(data.data) data.data = pacienteService.formatDate(data.data)
         return await Cirurgia.update({
-            descrição: data.descricao,
+            descrição: data.descrição,
             data: data.data,
-            fotos: totalUrls,
+            fotos: uploadedUrls,
             paciente: data.paciente
-        },{
-            where: {
-                id: data.id
-            }
         })
     },
     deletePictures: async (pictures) => {
-        if(!pictures) return true
-        if(!Array.isArray(pictures)) pictures = [pictures]
         for(const picture of pictures){
-            console.log('teste')
-            console.log(picture)
             const isDeleted = await bucket.s3Delete(picture)
             if(!isDeleted) return null
         }
         return true
     },
     insertPictures: async (pictures) => {
-        if(!Array.isArray(pictures)) pictures = [pictures]
-        console.log(pictures)
         const results = await Promise.all(pictures.map(async (picture) => {
             try {
                 const uploadedUrl = await bucket.bucketImageUpload(picture);

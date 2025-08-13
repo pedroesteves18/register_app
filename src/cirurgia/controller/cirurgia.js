@@ -23,17 +23,15 @@ const cirurgiaController = {
     updateCirurgia: async (req,res) => {
         try{
             const data = req.body
-            data.pics = req.files || req.file || []
-            data.id = req.params.id
+            data.picsInsert = req.files || req.file || []
             const user = await userService.fetchme(req.user)
             if(!user) return res.status(401).send({msg:"User not found"})
-            const isUpdated = await cirurgiaService.updateCirurgia(data)
-            if(!isUpdated) return res.status(400).send({msg:"Error while updating Cirurgia"})
             
-            return res.status(200).send({msg:"Cirurgia updated"})
+            
+
 
         }catch(err){
-            return res.status(500).send({msg:"Error while updating a 'Cirurgia'", err: err.message}) 
+
         }
     },
     deleteCirurgia: async (req,res) => {
@@ -44,16 +42,6 @@ const cirurgiaController = {
             return res.status(200).send({msg:"Cirurgia was removed"}) 
         }catch(err){
             return res.status(500).send({msg:"Error while removing a Cirurgia"})
-        }
-    },
-    fetchCirurgia: async (req,res) => {
-        try{
-            const id = req.params.id
-            const cirurgia = await cirurgiaService.fetchCirurgia(id)
-            if(!cirurgia) return res.status(400).send({msg:"Cirurgia not found"})
-            return res.status(200).send({cirurgia:cirurgia})
-        }catch(err){
-            return res.status(500).send({msg:"Error while fetching a Cirurgia", err: err.message})
         }
     }
 }
