@@ -61,11 +61,20 @@ const pacienteService = {
         )
     },
     fetchUsersPacientes: async (userId) => {
-        return await Paciente.findAll({
-            where: {
-                userId: userId
-            }
-        })
+        console.log('Service - userId received:', userId)
+        console.log('Service - Paciente model:', Paciente)
+        try {
+            const result = await Paciente.findAll({
+                where: {
+                    userId: userId
+                }
+            })
+            console.log('Service - Query result:', result)
+            return result
+        } catch (error) {
+            console.log('Service - Error in fetchUsersPacientes:', error.message)
+            throw error
+        }
     },
     verifyOwner: async (userId, pacienteId) => {
         const paciente = await Paciente.findOne({

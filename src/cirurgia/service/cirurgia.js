@@ -6,20 +6,23 @@ const cirurgiaService = {
     createCirurgia: async (data) => {
         const {uploadedUrls, errors} = await cirurgiaService.insertPictures(data.pics)
         if(errors.length > 0) return errors
+        
         const [day, month, year] = data.data.split('/');
         data.data = `${year}-${month}-${day}`;
+        
         return await Cirurgia.create({
             descrição: data.descrição,
             data: data.data,
             fotos: uploadedUrls,
-            paciente: data.paciente
+            pacienteId: data.pacienteId 
         })        
     },
     fetchPacienteCirurgias: async (pacienteId) => {
-        return await Cirurgia.findOne({
+        return await Cirurgia.findAll({
             where: {
-                paciente: pacienteId
-            }
+                pacienteId: pacienteId 
+            },
+            order: [['data', 'DESC']]
         })
     },
     deleteCirurgia: async (cirurgia) => {
@@ -95,6 +98,14 @@ const cirurgiaService = {
         const errors = results.filter(r => r.error).map(r => r.error);
         return { uploadedUrls, errors };
     },
+    fetchAllCirurgias: async (userId) => {
+        const pacientes = await pacienteService.fetchUsersPacientes(userId)
+        return await Cirurgia.findAll({
+            where: {
+                pacienteId: pacientes.map(paciente => paciente.id)
+            }
+        })
+    }
 
 }
 

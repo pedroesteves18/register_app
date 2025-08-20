@@ -5,9 +5,9 @@ import { Router } from 'express'
 const router = Router()
 
 router.post('/', verifyToken, pacienteController.createPaciente)
-router.delete('/:id', verifyToken, verifyPacienteOwner,pacienteController.deletePaciente)
+router.get('/all', verifyToken, pacienteController.fetchAllPacientes)
 router.get('/:id', verifyToken, pacienteController.fetchPaciente)
 router.put('/:id', verifyToken, verifyPacienteOwner, pacienteController.updatePaciente)
-
+router.delete('/:id', verifyToken, verifyPacienteOwner,pacienteController.deletePaciente)
 
 export default router

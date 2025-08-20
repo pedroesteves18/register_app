@@ -26,6 +26,20 @@ const pacienteController = {
             return res.status(500).send({msg:"Error while fetching Paciente"})
         }
     },
+    fetchAllPacientes: async (req,res) => {
+        console.log('teste')
+        try{
+            console.log('teste')
+            console.log('req.user:', req.user)
+            const pacientes = await pacienteService.fetchUsersPacientes(req.user)
+            console.log('pacientes:', pacientes)
+            return res.status(200).send({pacientes})
+        }catch(err){
+            console.log('Error details:', err.message)
+            console.log('Error stack:', err.stack)
+            return res.status(500).send({msg:"Error while fetching Pacientes",err:err.message})
+        }
+    },
     deletePaciente: async (req,res) => {
         try{
             let id = req.params.id
