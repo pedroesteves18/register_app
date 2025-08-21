@@ -3,10 +3,11 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import { configDotenv } from 'dotenv';
 import connection from './config/connection.js';
-import userRoutes from './src/user/routes/user.js';
-import pacienteRoutes from './src/paciente/routes/paciente.js'
-import cirurgiaRoutes from './src/cirurgia/routes/cirurgia.js'
-import proxyRoutes from './src/jobs/proxy.js'
+import userRoutes from './user/routes/user.js';
+import pacienteRoutes from './paciente/routes/paciente.js'
+import cirurgiaRoutes from './cirurgia/routes/cirurgia.js'
+import proxyRoutes from './jobs/proxy.js'
+import userService from './user/service/user.js'
 
 configDotenv()
 const app = express();
@@ -21,7 +22,7 @@ app.use('/pacientes', pacienteRoutes)
 app.use('/cirurgias', cirurgiaRoutes)
 
 app.listen(process.env.PORT,  async() => {
-  console.log('Server running');
+  const users = await userService.createDefaultUser()
   try{
     connection()
   }catch(err){

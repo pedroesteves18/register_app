@@ -43,30 +43,36 @@ const cirurgiaService = {
         })
     },
     updateCirurgia: async (data) => {
-        const urls = data.url || data.urls
-        const isDeleted = await cirurgiaService.deletePictures(urls)
-        if(!isDeleted) return null
-
-        const {uploadedUrls, errors} = await cirurgiaService.insertPictures(data.pics)
-        if(errors.length > 0) return errors
-
         const beforeUpdate = await cirurgiaService.fetchCirurgia(data.id)
-        beforeUpdate.fotos = beforeUpdate.fotos.filter(
-                                foto => !uploadedUrls.includes(foto)
-                                );
-        const totalUrls = [
-            ...uploadedUrls,
-            ...beforeUpdate.fotos.filter(foto => !urls.includes(foto))
-            ]
+        if (!beforeUpdate) return null
 
-        if(data.descricao === undefined) data.descricao = beforeUpdate.descrição
-        if(data.data) data.data = pacienteService.formatDate(data.data)
+        let totalUrls = [...beforeUpdate.fotos]
+
+        // Handle existing photos that should be kept
+        if (data.existingFotos && Array.isArray(data.existingFotos)) {
+            totalUrls = data.existingFotos
+        }
+
+        // Handle new photos upload
+        if (data.pics && Array.isArray(data.pics) && data.pics.length > 0) {
+            const {uploadedUrls, errors} = await cirurgiaService.insertPictures(data.pics)
+            if(errors.length > 0) return errors
+            totalUrls = [...totalUrls, ...uploadedUrls]
+        }
+
+        // Format date if provided
+        let formattedDate = beforeUpdate.data
+        if(data.data) {
+            formattedDate = pacienteService.formatDate(data.data)
+        }
+
+        // Use descricao from request or keep existing
+        const description = data.descricao || beforeUpdate.descrição
 
         return await Cirurgia.update({
-            descrição: data.descricao,
-            data: data.data,
-            fotos: totalUrls,
-            paciente: data.paciente
+            descrição: description,
+            data: formattedDate,
+            fotos: totalUrls
         },
         {
             where: {

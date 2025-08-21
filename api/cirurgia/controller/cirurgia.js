@@ -31,13 +31,31 @@ const cirurgiaController = {
             const data = req.body
             data.pics = req.files || req.file || []
             data.id = req.params.id
+            
+            // Handle existingFotos from FormData
+            if (req.body.existingFotos) {
+                // If it's a string, try to parse it as JSON
+                if (typeof req.body.existingFotos === 'string') {
+                    try {
+                        data.existingFotos = JSON.parse(req.body.existingFotos)
+                    } catch (e) {
+                        data.existingFotos = [req.body.existingFotos]
+                    }
+                } else if (Array.isArray(req.body.existingFotos)) {
+                    data.existingFotos = req.body.existingFotos
+                } else {
+                    data.existingFotos = [req.body.existingFotos]
+                }
+            }
+            
             const user = await userService.fetchme(req.user)
             if(!user) return res.status(401).send({msg:"User not found"})
+            
             const isUpdated = await cirurgiaService.updateCirurgia(data)
             if(!isUpdated) return res.status(400).send({msg:"Error while updating Cirurgia"})
             return res.status(200).send({msg:"Cirurgia updated"})
         }catch(err){
-              return res.status(500).send({msg:"Error while removing a Cirurgia"})
+            return res.status(500).send({msg:"Error while updating a Cirurgia", err: err.message})
         }
     },
     deleteCirurgia: async (req,res) => {
