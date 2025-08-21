@@ -16,7 +16,7 @@ To run the application in production mode:
 ```bash
 npm run docker:prod
 # or
-docker-compose up --build
+docker compose up --build
 ```
 
 This will start:
@@ -31,7 +31,7 @@ To run the application in development mode with hot reloading:
 ```bash
 npm run docker:dev
 # or
-docker-compose -f docker-compose.dev.yml up --build
+docker compose -f docker compose.dev.yml up --build
 ```
 
 This will start:

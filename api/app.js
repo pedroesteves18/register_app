@@ -22,9 +22,10 @@ app.use('/pacientes', pacienteRoutes)
 app.use('/cirurgias', cirurgiaRoutes)
 
 app.listen(process.env.PORT,  async() => {
-  const users = await userService.createDefaultUser()
   try{
-    connection()
+    await connection()
+
+    await userService.createDefaultUser()
   }catch(err){
     throw new Error(`Error connecting to the database: ${err.message}`);
   }
