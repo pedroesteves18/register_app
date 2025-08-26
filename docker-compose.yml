@@ -33,6 +33,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION}
       - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+      - ENABLE_DAILY_BACKUP=${ENABLE_DAILY_BACKUP}
     depends_on:
       - db
     networks:

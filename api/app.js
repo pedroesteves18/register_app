@@ -7,6 +7,8 @@ import userRoutes from './user/routes/user.js';
 import pacienteRoutes from './paciente/routes/paciente.js'
 import cirurgiaRoutes from './cirurgia/routes/cirurgia.js'
 import proxyRoutes from './jobs/proxy.js'
+import backupRoutes from './jobs/backupRoutes.js'
+import scheduler from './jobs/scheduler.js'
 import userService from './user/service/user.js'
 
 configDotenv()
@@ -20,12 +22,18 @@ app.use('/proxy', proxyRoutes)
 app.use('/users', userRoutes);
 app.use('/pacientes', pacienteRoutes)
 app.use('/cirurgias', cirurgiaRoutes)
+app.use('/api/backup', backupRoutes)
 
-app.listen(process.env.PORT,  async() => {
+app.listen(process.env.PORT, async () => {
   try{
     await connection()
 
     await userService.createDefaultUser()
+    
+    // Initialize backup scheduler (this will run initial backup)
+    await scheduler.initializeScheduler()
+    
+    console.log(`🚀 Server running on port ${process.env.PORT}`)
   }catch(err){
     throw new Error(`Error connecting to the database: ${err.message}`);
   }
