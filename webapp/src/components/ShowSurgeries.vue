@@ -28,29 +28,29 @@ const fetchSurgeries = async () => {
     const patientId = route.params.patientId || route.query.patientId
     currentPatientId.value = patientId
     
-         let response
-     if (patientId) {
-       // Fetch surgeries for specific patient
-       response = await cirurgiasAPI.getPacienteCirurgias(patientId)
-       surgeries.value = response.cirurgias || response || []
-     } else {
-       // Fetch all surgeries
-       response = await cirurgiasAPI.getAllCirurgias()
-       surgeries.value = response.cirurgias || []
-     }
+    let response
+    if (patientId) {
+      // Fetch surgeries for specific patient
+      response = await cirurgiasAPI.getPacienteCirurgias(patientId)
+      surgeries.value = response.cirurgias || response || []
+    } else {
+      // Fetch all surgeries
+      response = await cirurgiasAPI.getAllCirurgias()
+      surgeries.value = response.cirurgias || []
+    }
     retryCount.value = 0 // Reset retry count on success
   } catch (error) {
     console.error('Error fetching surgeries:', error)
     console.error('Error details:', error.response?.data)
     console.error('Error status:', error.response?.status)
     
-         if (retryCount.value < maxRetries) {
-       retryCount.value++
-       setTimeout(() => {
-         fetchSurgeries()
-       }, 1000 * retryCount.value) // Exponential backoff
-       return
-     }
+    if (retryCount.value < maxRetries) {
+      retryCount.value++
+      setTimeout(() => {
+        fetchSurgeries()
+      }, 1000 * retryCount.value) // Exponential backoff
+      return
+    }
     
     errorMessage.value = `Erro ao carregar cirurgias: ${error.response?.data?.msg || error.message}`
   } finally {
@@ -89,12 +89,12 @@ const viewSurgeryDetails = async (surgery) => {
       isLoadingPatientData.value = true
       try {
         const completePatientData = await fetchCompletePatientData(pacienteId)
-                 if (completePatientData) {
-           selectedSurgery.value = {
-             ...surgery,
-             paciente: { ...surgery.paciente, ...completePatientData }
-           }
-         }
+        if (completePatientData) {
+          selectedSurgery.value = {
+            ...surgery,
+            paciente: { ...surgery.paciente, ...completePatientData }
+          }
+        }
       } finally {
         isLoadingPatientData.value = false
       }
@@ -135,7 +135,6 @@ const deleteSurgery = async (surgeryId) => {
 
 const handleImageError = (event) => {
   console.warn('Image failed to load:', event.target.src)
-  // Optionally set a fallback image
   event.target.style.display = 'none'
 }
 
@@ -146,52 +145,79 @@ onMounted(() => {
 
 <template>
   <div class="surgeries-container">
+    <!-- Header -->
     <div class="header">
-      <h1>{{ currentPatientId ? 'Cirurgias do Paciente' : 'Cirurgias' }}</h1>
-      <button @click="goBack" class="back-button">
-        {{ currentPatientId ? '← Voltar ao Paciente' : '← Voltar aos Pacientes' }}
+      <h1>{{ currentPatientId ? 'Cirurgias' : 'Todas as Cirurgias' }}</h1>
+      <button @click="goBack" class="btn-secondary">
+        {{ currentPatientId ? '← Paciente' : '← Pacientes' }}
       </button>
     </div>
 
+    <!-- Error Message -->
     <div v-if="errorMessage" class="error-message">
       <p>{{ errorMessage }}</p>
-      <button @click="fetchSurgeries" class="retry-button">Tentar Novamente</button>
+      <button @click="fetchSurgeries" class="btn-primary">Tentar Novamente</button>
     </div>
     
+    <!-- Loading -->
     <div v-if="isLoading" class="loading-container">
       <div class="loading-spinner"></div>
       <p>Carregando cirurgias...</p>
     </div>
     
-    <div v-else-if="!surgeries || surgeries.length === 0" class="no-surgeries">
+    <!-- No Surgeries -->
+    <div v-else-if="!surgeries || surgeries.length === 0" class="empty-state">
+      <span class="empty-icon">🏥</span>
       <p>Nenhuma cirurgia encontrada</p>
     </div>
     
-    <div v-else class="surgeries-grid">
+    <!-- Surgeries List -->
+    <div v-else class="surgeries-list">
       <div v-for="surgery in surgeries" :key="surgery.id" class="surgery-card">
-        <div class="surgery-header">
-          <h3>{{ surgery.descrição || 'Sem descrição' }}</h3>
+        <div class="surgery-info">
+          <div class="surgery-header">
+            <h3>{{ surgery.descrição || 'Sem descrição' }}</h3>
+            <span class="surgery-id">#{{ surgery.id }}</span>
+          </div>
+          <div class="surgery-details">
+            <div class="detail-item">
+              <span class="detail-label">Data:</span>
+              <span class="detail-value">{{ surgery.data }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Paciente:</span>
+              <span class="detail-value">{{ surgery.paciente?.nome || 'Paciente não encontrado' }}</span>
+            </div>
+            <div v-if="surgery.fotos && surgery.fotos.length > 0" class="detail-item">
+              <span class="detail-label">Fotos:</span>
+              <span class="detail-value">📷 {{ surgery.fotos.length }}</span>
+            </div>
+          </div>
         </div>
-        <div class="surgery-details">
-          <p><strong>Data:</strong> {{ surgery.data }}</p>  
-          <p v-if="surgery.fotos && surgery.fotos.length > 0">
-          </p>
-          <p><strong>Paciente:</strong> {{surgery.paciente?.nome || 'Paciente não encontrado' }}</p>
-        </div>
+        
         <div class="surgery-actions">
-          <button @click="editSurgery(surgery)" class="action-button edit">Editar</button>
-          <button @click="viewSurgeryDetails(surgery)" class="action-button view">Ver Detalhes</button>
-          <button @click="deleteSurgery(surgery.id)" class="action-button delete">Excluir</button>
+          <button @click="viewSurgeryDetails(surgery)" class="action-btn view">
+            <span class="action-icon">👁️</span>
+            Detalhes
+          </button>
+          <button @click="editSurgery(surgery)" class="action-btn edit">
+            <span class="action-icon">✏️</span>
+            Editar
+          </button>
+          <button @click="deleteSurgery(surgery.id)" class="action-btn delete">
+            <span class="action-icon">🗑️</span>
+            Excluir
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Surgery Details Modal -->
-         <div v-if="showDetailsModal" class="modal-overlay" @click="closeModal">
-       <div class="modal-content" @click.stop>
+    <div v-if="showDetailsModal" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h2>Detalhes da Cirurgia</h2>
-          <button @click="closeModal" class="close-button">×</button>
+          <button @click="closeModal" class="close-btn">×</button>
         </div>
         
         <div v-if="selectedSurgery" class="surgery-details-modal">
@@ -199,57 +225,61 @@ onMounted(() => {
             <h3>Informações da Cirurgia</h3>
             <div class="detail-grid">
               <div class="detail-item">
-                <strong>Descrição:</strong>
+                <span class="detail-label">Descrição:</span>
                 <span>{{ selectedSurgery.descrição || 'Não informado' }}</span>
               </div>
               <div class="detail-item">
-                <strong>Data:</strong>
+                <span class="detail-label">Data:</span>
                 <span>{{ selectedSurgery.data || 'Não informado' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">ID:</span>
+                <span>#{{ selectedSurgery.id }}</span>
               </div>
             </div>
           </div>
 
-                     <div class="detail-section">
-             <h3>Informações do Paciente</h3>
-             <div v-if="isLoadingPatientData" class="loading-patient-data">
-               <div class="loading-spinner"></div>
-               <p>Carregando dados completos do paciente...</p>
-             </div>
-             <div v-else class="detail-grid">
+          <div class="detail-section">
+            <h3>Informações do Paciente</h3>
+            <div v-if="isLoadingPatientData" class="loading-state">
+              <div class="loading-spinner small"></div>
+              <p>Carregando dados do paciente...</p>
+            </div>
+            <div v-else class="detail-grid">
               <div class="detail-item">
-                <strong>Nome:</strong>
+                <span class="detail-label">Nome:</span>
                 <span>{{ selectedSurgery.paciente?.nome || 'Paciente não encontrado' }}</span>
               </div>
-                             <div class="detail-item">
-                 <strong>Data de Nascimento:</strong>
-                 <span>{{ selectedSurgery.paciente?.dot || selectedSurgery.paciente?.data_nascimento || selectedSurgery.paciente?.birth_date || 'Não informado' }}</span>
-               </div>
-               <div class="detail-item">
-                 <strong>Sexo:</strong>
-                 <span>{{ selectedSurgery.paciente?.sexo === 'masc' ? 'Masculino' : selectedSurgery.paciente?.sexo === 'fem' ? 'Feminino' : 'Não informado' }}</span>
-               </div>
-               <div class="detail-item">
-                 <strong>Hospital:</strong>
-                 <span>{{ selectedSurgery.paciente?.hospital || selectedSurgery.paciente?.hospital_name || 'Não informado' }}</span>
-               </div>
-               <div class="detail-item">
-                 <strong>Registro:</strong>
-                 <span>{{ selectedSurgery.paciente?.registro || selectedSurgery.paciente?.registration || 'Não informado' }}</span>
-               </div>
+              <div class="detail-item">
+                <span class="detail-label">Nascimento:</span>
+                <span>{{ selectedSurgery.paciente?.dot || selectedSurgery.paciente?.data_nascimento || selectedSurgery.paciente?.birth_date || 'Não informado' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Sexo:</span>
+                <span>{{ selectedSurgery.paciente?.sexo === 'masc' ? '♂ Masculino' : selectedSurgery.paciente?.sexo === 'fem' ? '♀ Feminino' : 'Não informado' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Hospital:</span>
+                <span>{{ selectedSurgery.paciente?.hospital || selectedSurgery.paciente?.hospital_name || 'Não informado' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Registro:</span>
+                <span>{{ selectedSurgery.paciente?.registro || selectedSurgery.paciente?.registration || 'Não informado' }}</span>
+              </div>
             </div>
           </div>
 
           <div v-if="selectedSurgery.fotos && selectedSurgery.fotos.length > 0" class="detail-section">
             <h3>Fotos da Cirurgia ({{ selectedSurgery.fotos.length }})</h3>
             <div class="photos-grid">
-              <div v-for="(foto, index) in selectedSurgery.fotos" :key="index" class="photo-container">
-                                 <img 
-                   :src="cirurgiasAPI.getImageProxy(foto) || ''" 
-                   :alt="`Foto ${index + 1}`" 
-                   class="surgery-photo" 
-                   @click="viewImage(cirurgiasAPI.getImageProxy(foto))"
-                   @error="handleImageError"
-                 />
+              <div v-for="(foto, index) in selectedSurgery.fotos" :key="index" class="photo-item">
+                <img 
+                  :src="cirurgiasAPI.getImageProxy(foto) || ''" 
+                  :alt="`Foto ${index + 1}`" 
+                  class="surgery-photo" 
+                  @click="viewImage(cirurgiasAPI.getImageProxy(foto))"
+                  @error="handleImageError"
+                />
                 <span class="photo-label">Foto {{ index + 1 }}</span>
               </div>
             </div>
@@ -263,25 +293,25 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="modal-actions">
-          <button @click="editSurgery(selectedSurgery)" class="modal-action-button edit">Editar Cirurgia</button>
-          <button @click="closeModal" class="modal-action-button close">Fechar</button>
+        <div class="modal-footer">
+          <button @click="editSurgery(selectedSurgery)" class="btn-primary">Editar Cirurgia</button>
+          <button @click="closeModal" class="btn-secondary">Fechar</button>
         </div>
       </div>
     </div>
 
     <!-- Image Modal -->
-    <div v-if="showImageModal" class="modal-overlay image-modal-overlay" @click="closeImageModal">
+    <div v-if="showImageModal" class="modal-overlay image-modal" @click="closeImageModal">
       <div class="image-modal-content" @click.stop>
         <div class="image-modal-header">
-          <h3>Visualização da Imagem</h3>
-          <button @click="closeImageModal" class="close-button">×</button>
+          <h3>Imagem</h3>
+          <button @click="closeImageModal" class="close-btn">×</button>
         </div>
         <div class="image-modal-body">
-          <img :src="selectedImage" alt="Imagem da cirurgia" class="full-size-image" />
+          <img :src="selectedImage" alt="Imagem da cirurgia" class="full-image" />
         </div>
-        <div class="image-modal-actions">
-          <button @click="closeImageModal" class="close-modal-button">Fechar</button>
+        <div class="image-modal-footer">
+          <button @click="closeImageModal" class="btn-secondary">Fechar</button>
         </div>
       </div>
     </div>
@@ -293,146 +323,87 @@ onMounted(() => {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  font-family: Arial, sans-serif;
-  padding: 2vw;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 16px;
+  padding-bottom: 80px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 3vw;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-h1 {
-  font-size: 3vw;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+.header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.back-button {
-  padding: 1vw 2vw;
+.btn-primary {
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.btn-secondary {
   background: rgba(255, 255, 255, 0.2);
   color: white;
-  font-size: 1.2vw;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   backdrop-filter: blur(10px);
+  min-height: 44px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-.back-button:hover {
+.btn-secondary:hover {
   background: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
-}
-
-.surgeries-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2vw;
-}
-
-.surgery-card {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  padding: 2vw;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.surgery-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.surgery-header {
-  margin-bottom: 1vw;
-}
-
-.surgery-header h3 {
-  font-size: 1.5vw;
-  margin: 0;
-  color: #ffd700;
-}
-
-.surgery-details p {
-  margin: 0.5vw 0;
-  font-size: 1vw;
-}
-
-.surgery-actions {
-  display: flex;
-  gap: 0.5vw;
-  margin-top: 1.5vw;
-}
-
-.action-button {
-  flex: 1;
-  padding: 0.8vw;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.8vw;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: bold;
-}
-
-.action-button.edit {
-  background: #2196f3;
-  color: white;
-}
-
-.action-button.view {
-  background: #4caf50;
-  color: white;
-}
-
-.action-button.delete {
-  background: #f44336;
-  color: white;
-}
-
-.action-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.action-button.delete:hover {
-  background: #d32f2f;
 }
 
 .error-message {
   background: rgba(255, 107, 107, 0.1);
   border: 1px solid rgba(255, 107, 107, 0.3);
   color: #ff6b6b;
-  padding: 2vw;
-  border-radius: 10px;
-  margin-bottom: 2vw;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
   text-align: center;
-  font-size: 1.2vw;
+  font-size: 14px;
 }
 
 .error-message p {
-  margin: 0 0 1vw 0;
-}
-
-.retry-button {
-  padding: 1vw 2vw;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255, 107, 107, 0.8);
-  color: white;
-  font-size: 1vw;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 1vw;
-}
-
-.retry-button:hover {
-  background: rgba(255, 107, 107, 1);
-  transform: translateY(-1px);
+  margin: 0 0 12px 0;
 }
 
 .loading-container {
@@ -440,17 +411,29 @@ h1 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4vw;
-  gap: 2vw;
+  padding: 48px;
+  gap: 16px;
+}
+
+.loading-container p {
+  margin: 0;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .loading-spinner {
-  width: 4vw;
-  height: 4vw;
+  width: 32px;
+  height: 32px;
   border: 3px solid rgba(255, 255, 255, 0.3);
   border-top: 3px solid white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+.loading-spinner.small {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
 }
 
 @keyframes spin {
@@ -458,189 +441,166 @@ h1 {
   100% { transform: rotate(360deg); }
 }
 
-.no-surgeries {
-  text-align: center;
-  padding: 4vw;
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px;
+  gap: 16px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.empty-icon {
+  font-size: 48px;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 18px;
+}
+
+.surgeries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.surgery-card {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  font-size: 1.5vw;
-  font-style: italic;
+  border-radius: 16px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
 }
 
-/* Mobile Responsive Styles */
-@media (max-width: 768px) {
-  .surgeries-container {
-    padding: 4vw;
-  }
-
-  .header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 3vw;
-  }
-
-  h1 {
-    font-size: 6vw;
-    text-align: center;
-  }
-
-  .back-button {
-    padding: 2.5vw 4vw;
-    font-size: 3.5vw;
-    border-radius: 15px;
-    align-self: center;
-  }
-
-  .surgeries-grid {
-    grid-template-columns: 1fr;
-    gap: 4vw;
-  }
-
-  .surgery-card {
-    padding: 4vw;
-    border-radius: 20px;
-  }
-
-  .surgery-header h3 {
-    font-size: 4.5vw;
-  }
-
-  .surgery-details p {
-    font-size: 3.5vw;
-    margin: 1vw 0;
-  }
-
-  .surgery-actions {
-    gap: 1.5vw;
-    margin-top: 3vw;
-  }
-
-  .action-button {
-    padding: 2.5vw;
-    font-size: 2.5vw;
-    border-radius: 12px;
-  }
-
-  .error-message {
-    font-size: 3vw;
-    padding: 3vw;
-  }
-
-  .error-message p {
-    margin: 0 0 2vw 0;
-  }
-
-  .retry-button {
-    padding: 2vw 3vw;
-    font-size: 2.5vw;
-    border-radius: 10px;
-    margin-top: 2vw;
-  }
-
-  .loading-container {
-    padding: 6vw;
-    gap: 3vw;
-  }
-
-  .loading-spinner {
-    width: 6vw;
-    height: 6vw;
-  }
-
-  .no-surgeries {
-    padding: 6vw;
-    font-size: 3.5vw;
-    border-radius: 20px;
-  }
+.surgery-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
-@media (max-width: 480px) {
-  .surgeries-container {
-    padding: 5vw;
-  }
-
-  h1 {
-    font-size: 7vw;
-  }
-
-  .back-button {
-    padding: 3vw 5vw;
-    font-size: 4vw;
-  }
-
-  .surgery-card {
-    padding: 5vw;
-    border-radius: 25px;
-  }
-
-  .surgery-header h3 {
-    font-size: 5vw;
-  }
-
-  .surgery-details p {
-    font-size: 4vw;
-  }
-
-  .action-button {
-    padding: 3vw;
-    font-size: 3vw;
-    border-radius: 15px;
-  }
-
-  .error-message {
-    font-size: 3.5vw;
-    padding: 4vw;
-  }
-
-  .error-message p {
-    margin: 0 0 2.5vw 0;
-  }
-
-  .retry-button {
-    padding: 2.5vw 4vw;
-    font-size: 3vw;
-    border-radius: 12px;
-    margin-top: 2.5vw;
-  }
-
-  .loading-container {
-    padding: 8vw;
-    gap: 4vw;
-  }
-
-  .loading-spinner {
-    width: 8vw;
-    height: 8vw;
-  }
-
-  .no-surgeries {
-    padding: 8vw;
-    font-size: 4vw;
-    border-radius: 25px;
-  }
+.surgery-info {
+  margin-bottom: 16px;
 }
 
-/* Modal Styles */
+.surgery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.surgery-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  color: #ffd700;
+  flex: 1;
+}
+
+.surgery-id {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.surgery-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: white;
+  font-weight: 600;
+  text-align: right;
+}
+
+.surgery-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.action-btn.view {
+  background: #4caf50;
+  color: white;
+}
+
+.action-btn.edit {
+  background: #2196f3;
+  color: white;
+}
+
+.action-btn.delete {
+  background: #f44336;
+  color: white;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.action-icon {
+  font-size: 16px;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 16px;
   backdrop-filter: blur(5px);
 }
 
 .modal-content {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 20px;
-  padding: 3vw;
-  max-width: 80vw;
-  max-height: 80vh;
+  padding: 24px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
   overflow-y: auto;
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -651,197 +611,164 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2vw;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .modal-header h2 {
-  font-size: 2.5vw;
+  font-size: 24px;
+  font-weight: 700;
   margin: 0;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  color: white;
 }
 
-.close-button {
+.close-btn {
   background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;
-  font-size: 2vw;
+  font-size: 24px;
   cursor: pointer;
   border-radius: 50%;
-  width: 3vw;
-  height: 3vw;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
-.close-button:hover {
+.close-btn:hover {
   background: rgba(255, 255, 255, 0.3);
   transform: scale(1.1);
 }
 
 .surgery-details-modal {
-  margin-bottom: 2vw;
+  margin-bottom: 20px;
 }
 
 .detail-section {
   background: rgba(255, 255, 255, 0.1);
-  padding: 2vw;
-  border-radius: 15px;
-  margin-bottom: 2vw;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
 }
 
 .detail-section h3 {
-  font-size: 1.8vw;
-  margin: 0 0 1.5vw 0;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
   color: #ffd700;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .detail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1vw;
-}
-
-.detail-item {
   display: flex;
   flex-direction: column;
-  gap: 0.5vw;
+  gap: 8px;
 }
 
-.detail-item strong {
-  font-size: 1vw;
-  color: #ffd700;
+.detail-grid .detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.detail-item span {
-  font-size: 1.1vw;
-  padding: 0.5vw;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  border-left: 3px solid rgba(255, 255, 255, 0.3);
+.detail-grid .detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-grid .detail-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.detail-grid .detail-item span:last-child {
+  font-size: 14px;
+  color: white;
+  font-weight: 600;
+  text-align: right;
 }
 
 .photos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1.5vw;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
 }
 
-.photo-container {
+.photo-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5vw;
+  gap: 8px;
 }
 
 .surgery-photo {
   width: 100%;
-  height: 150px;
+  height: 100px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .surgery-photo:hover {
   transform: scale(1.05);
   border-color: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .photo-label {
-  font-size: 0.9vw;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.8);
   text-align: center;
 }
 
 .history-content {
   background: rgba(255, 255, 255, 0.05);
-  padding: 1.5vw;
-  border-radius: 10px;
+  padding: 16px;
+  border-radius: 12px;
   border-left: 4px solid rgba(255, 255, 255, 0.3);
-  font-size: 1.1vw;
+  font-size: 14px;
   line-height: 1.6;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
-.loading-patient-data {
+.loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 2vw;
-  gap: 1vw;
+  padding: 24px;
+  gap: 12px;
 }
 
-.loading-patient-data .loading-spinner {
-  width: 2vw;
-  height: 2vw;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top: 2px solid white;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.loading-patient-data p {
-  font-size: 1vw;
-  color: rgba(255, 255, 255, 0.8);
+.loading-state p {
   margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.modal-actions {
+.modal-footer {
   display: flex;
   justify-content: center;
-  gap: 1vw;
-  margin-top: 2vw;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.modal-action-button {
-  padding: 1vw 2vw;
-  border: none;
-  border-radius: 10px;
-  font-size: 1.1vw;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.modal-action-button.edit {
-  background: #2196f3;
-  color: white;
-}
-
-.modal-action-button.close {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-}
-
-.modal-action-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.modal-action-button.edit:hover {
-  background: #1976d2;
-}
-
-.modal-action-button.close:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* Image Modal Styles */
-.image-modal-overlay {
-  background: rgba(0, 0, 0, 0.9);
+.image-modal {
+  background: rgba(0, 0, 0, 0.95);
 }
 
 .image-modal-content {
   background: rgba(0, 0, 0, 0.95);
-  border-radius: 15px;
-  padding: 2vw;
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
   max-width: 90vw;
   max-height: 90vh;
   overflow: hidden;
@@ -853,13 +780,14 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1vw;
-  padding-bottom: 1vw;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .image-modal-header h3 {
-  font-size: 1.5vw;
+  font-size: 18px;
+  font-weight: 600;
   margin: 0;
   color: white;
 }
@@ -868,227 +796,98 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  max-height: 70vh;
+  max-height: 60vh;
   overflow: auto;
+  margin-bottom: 16px;
 }
 
-.full-size-image {
+.full-image {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   border-radius: 8px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
-.image-modal-actions {
+.image-modal-footer {
   display: flex;
   justify-content: center;
-  margin-top: 1vw;
-  padding-top: 1vw;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.close-modal-button {
-  padding: 1vw 3vw;
-  border: none;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  font-size: 1.2vw;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.close-modal-button:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-}
-
-/* Mobile Responsive Modal Styles */
-@media (max-width: 768px) {
-  .modal-content {
-    margin: 4vw;
-    padding: 6vw;
-    max-width: 92vw;
-    max-height: 92vh;
-    border-radius: 25px;
-  }
-
-  .modal-header h2 {
-    font-size: 5vw;
-  }
-
-  .close-button {
-    width: 8vw;
-    height: 8vw;
-    font-size: 5vw;
-  }
-
-  .detail-section {
-    padding: 4vw;
-    border-radius: 20px;
-    margin-bottom: 3vw;
-  }
-
-  .detail-section h3 {
-    font-size: 4vw;
-    margin-bottom: 3vw;
-  }
-
-  .detail-grid {
-    grid-template-columns: 1fr;
-    gap: 2vw;
-  }
-
-  .detail-item strong {
-    font-size: 3vw;
-  }
-
-  .detail-item span {
-    font-size: 3.5vw;
-    padding: 1vw;
-    border-radius: 12px;
-  }
-
-  .photos-grid {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 3vw;
-  }
-
-  .surgery-photo {
-    height: 120px;
-    border-radius: 15px;
-  }
-
-  .photo-label {
-    font-size: 2.5vw;
-  }
-
-  .history-content {
-    padding: 3vw;
-    border-radius: 15px;
-    font-size: 3.5vw;
-  }
-
-  .loading-patient-data {
-    padding: 4vw;
-    gap: 2vw;
-  }
-
-  .loading-patient-data .loading-spinner {
-    width: 4vw;
-    height: 4vw;
-  }
-
-  .loading-patient-data p {
-    font-size: 3vw;
-  }
-
-  .modal-actions {
-    gap: 2vw;
-    margin-top: 3vw;
-  }
-
-  .modal-action-button {
-    padding: 2.5vw 4vw;
-    font-size: 3.5vw;
-    border-radius: 15px;
-  }
-
-  .image-modal-content {
-    max-width: 95vw;
-    max-height: 95vh;
-    padding: 4vw;
-  }
-
-  .image-modal-header h3 {
-    font-size: 4vw;
-  }
-
-  .image-modal-body {
-    max-height: 75vh;
-  }
-
-  .close-modal-button {
-    padding: 3vw 6vw;
-    font-size: 3.5vw;
-    border-radius: 15px;
-  }
 }
 
 @media (max-width: 480px) {
+  .surgeries-container {
+    padding: 12px;
+    padding-bottom: 80px;
+  }
+  
+  .header {
+    margin-bottom: 20px;
+  }
+  
+  .header h1 {
+    font-size: 24px;
+  }
+  
+  .surgery-card {
+    padding: 16px;
+  }
+  
+  .surgery-header h3 {
+    font-size: 18px;
+  }
+  
+  .surgery-actions {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  
+  .action-btn {
+    padding: 12px 8px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+  
   .modal-content {
-    margin: 5vw;
-    padding: 8vw;
+    padding: 20px;
+    margin: 8px;
   }
-
+  
   .modal-header h2 {
-    font-size: 6vw;
+    font-size: 20px;
   }
-
-  .close-button {
-    width: 10vw;
-    height: 10vw;
-    font-size: 6vw;
-  }
-
-  .detail-section {
-    padding: 5vw;
-    border-radius: 25px;
-  }
-
+  
   .detail-section h3 {
-    font-size: 5vw;
+    font-size: 16px;
   }
-
-  .detail-item strong {
-    font-size: 4vw;
-  }
-
-  .detail-item span {
-    font-size: 4.5vw;
-  }
-
+  
   .photos-grid {
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 4vw;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
   }
-
+  
   .surgery-photo {
-    height: 100px;
+    height: 80px;
   }
+}
 
-  .photo-label {
-    font-size: 3vw;
+@media (max-width: 360px) {
+  .surgeries-container {
+    padding: 8px;
   }
-
-  .history-content {
-    padding: 4vw;
-    font-size: 4.5vw;
+  
+  .header h1 {
+    font-size: 20px;
   }
-
-  .modal-action-button {
-    padding: 3vw 5vw;
-    font-size: 4vw;
+  
+  .surgery-actions {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
   }
-
-  .image-modal-content {
-    max-width: 98vw;
-    max-height: 98vh;
-    padding: 5vw;
-  }
-
-  .image-modal-header h3 {
-    font-size: 5vw;
-  }
-
-  .image-modal-body {
-    max-height: 80vh;
-  }
-
-  .close-modal-button {
-    padding: 4vw 8vw;
-    font-size: 4vw;
+  
+  .action-btn {
+    padding: 12px 6px;
+    font-size: 12px;
+    min-height: 44px;
   }
 }
 </style>

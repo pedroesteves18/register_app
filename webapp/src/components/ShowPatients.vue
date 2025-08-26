@@ -914,7 +914,7 @@ h1 {
   }
 
   .search-input {
-    padding: 3vw 4vw 3vw 4vw;
+    padding: 3vw 6vw 3vw 4vw;
     font-size: 4vw;
     border-radius: 20px;
   }

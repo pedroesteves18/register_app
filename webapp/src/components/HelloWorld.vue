@@ -99,6 +99,26 @@ const handleButtonClick = async (event) => {
   padding: 2vw;
 }
 
+@media (max-width: 1024px) {
+  .welcome-container {
+    padding: 3vw;
+    background-color: orange;
+  }
+}
+
+@media (max-width: 768px) {
+  .welcome-container {
+    padding: 4vw;
+    background-color: red;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-container {
+    padding: 5vw;
+  }
+}
+
 .welcome-content {
   text-align: center;
   background: rgba(255, 255, 255, 0.1);
@@ -110,6 +130,20 @@ const handleButtonClick = async (event) => {
   width: 100%;
 }
 
+@media (max-width: 768px) {
+  .welcome-content {
+    padding: 6vw;
+    border-radius: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-content {
+    padding: 8vw;
+    border-radius: 30px;
+  }
+}
+
 h1 {
   color: white;
   font-size: 2.5vw;
@@ -117,10 +151,36 @@ h1 {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+@media (max-width: 768px) {
+  h1 {
+    font-size: 6vw;
+    margin-bottom: 5vw;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 7vw;
+    margin-bottom: 6vw;
+  }
+}
+
 .input-section {
   display: flex;
   flex-direction: column;
   gap: 2vw;
+}
+
+@media (max-width: 768px) {
+  .input-section {
+    gap: 4vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .input-section {
+    gap: 5vw;
+  }
 }
 
 .access-input {
@@ -131,6 +191,23 @@ h1 {
   background: rgba(255, 255, 255, 0.9);
   color: #333;
   transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .access-input {
+    padding: 4vw;
+    font-size: 4vw;
+    border-radius: 15px;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .access-input {
+    padding: 5vw;
+    font-size: 4.5vw;
+    border-radius: 18px;
+  }
 }
 
 .access-input:focus {
@@ -162,6 +239,23 @@ h1 {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
+@media (max-width: 768px) {
+  .submit-button {
+    padding: 4vw 8vw;
+    font-size: 4vw;
+    border-radius: 15px;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .submit-button {
+    padding: 5vw 10vw;
+    font-size: 4.5vw;
+    border-radius: 18px;
+  }
+}
+
 .submit-button:hover:not(.disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
@@ -184,80 +278,22 @@ h1 {
   border: 1px solid rgba(255, 107, 107, 0.3);
 }
 
-/* Mobile Responsive Styles */
 @media (max-width: 768px) {
-  .welcome-container {
-    padding: 4vw;
-  }
-
-  .welcome-content {
-    padding: 6vw;
-    border-radius: 25px;
-  }
-
-  h1 {
-    font-size: 5vw;
-    margin-bottom: 4vw;
-  }
-
-  .input-section {
-    gap: 3vw;
-  }
-
-  .access-input {
-    padding: 3vw;
-    font-size: 4vw;
-    border-radius: 15px;
-  }
-
-  .submit-button {
-    padding: 3vw 6vw;
-    font-size: 4vw;
-    border-radius: 15px;
-  }
-
   .error-message {
-    font-size: 3vw;
-    padding: 2vw;
+    font-size: 3.5vw;
+    padding: 3vw;
     border-radius: 12px;
   }
 }
 
 @media (max-width: 480px) {
-  .welcome-container {
-    padding: 5vw;
-  }
-
-  .welcome-content {
-    padding: 8vw;
-    border-radius: 30px;
-  }
-
-  h1 {
-    font-size: 6vw;
-    margin-bottom: 5vw;
-  }
-
-  .input-section {
-    gap: 4vw;
-  }
-
-  .access-input {
-    padding: 4vw;
-    font-size: 4.5vw;
-    border-radius: 20px;
-  }
-
-  .submit-button {
-    padding: 4vw 8vw;
-    font-size: 4.5vw;
-    border-radius: 20px;
-  }
-
   .error-message {
-    font-size: 3.5vw;
-    padding: 3vw;
+    font-size: 4vw;
+    padding: 4vw;
     border-radius: 15px;
   }
 }
+
+/* Mobile Responsive Styles */
+
 </style>

@@ -15,8 +15,8 @@ const patientForm = ref({
 })
 
 const sexoOptions = ref([
-  { value: 'masc', label: 'Masculino' },
-  { value: 'fem', label: 'Feminino' }
+  { value: 'masc', label: '♂ Masculino' },
+  { value: 'fem', label: '♀ Feminino' }
 ])
 
 const isLoading = ref(false)
@@ -109,17 +109,24 @@ const handleSubmit = async () => {
 
 <template>
   <div class="create-patient-container">
+    <!-- Header -->
     <div class="header">
-      <h1>Criar Novo Paciente</h1>
-      <button @click="goBack" class="back-button">← Voltar aos Pacientes</button>
+      <h1>Novo Paciente</h1>
+      <button @click="goBack" class="btn-secondary">
+        ← Voltar
+      </button>
     </div>
     
+    <!-- Form Container -->
     <div class="form-container">
       <form @submit.prevent="handleSubmit" class="patient-form">
+        <!-- Error Message -->
         <div v-if="errorMessage" class="error-message">
-          {{ errorMessage }}
+          <span class="error-icon">⚠️</span>
+          <p>{{ errorMessage }}</p>
         </div>
 
+        <!-- Name Field -->
         <div class="form-group">
           <label for="nome">Nome Completo *</label>
           <input 
@@ -127,11 +134,13 @@ const handleSubmit = async () => {
             v-model="patientForm.nome" 
             type="text" 
             required 
-            placeholder="Digite o nome completo do paciente"
+            placeholder="Digite o nome completo"
             :disabled="isLoading"
+            class="form-input"
           />
         </div>
         
+        <!-- Birth Date Field -->
         <div class="form-group">
           <label for="dot">Data de Nascimento *</label>
           <input 
@@ -143,12 +152,14 @@ const handleSubmit = async () => {
             maxlength="10"
             @input="formatDate"
             :disabled="isLoading"
+            class="form-input"
           />
         </div>
         
+        <!-- Gender Field -->
         <div class="form-group">
           <label for="sexo">Sexo *</label>
-          <select id="sexo" v-model="patientForm.sexo" required :disabled="isLoading">
+          <select id="sexo" v-model="patientForm.sexo" required :disabled="isLoading" class="form-select">
             <option value="">Selecione o sexo</option>
             <option v-for="option in sexoOptions" :key="option.value" :value="option.value">
               {{ option.label }}
@@ -156,6 +167,7 @@ const handleSubmit = async () => {
           </select>
         </div>
         
+        <!-- Hospital Field -->
         <div class="form-group">
           <label for="hospital">Hospital *</label>
           <input 
@@ -165,9 +177,11 @@ const handleSubmit = async () => {
             required
             placeholder="Digite o nome do hospital"
             :disabled="isLoading"
+            class="form-input"
           />
         </div>
         
+        <!-- Registration Field -->
         <div class="form-group">
           <label for="registro">Registro *</label>
           <input 
@@ -177,23 +191,30 @@ const handleSubmit = async () => {
             required
             placeholder="Digite o número de registro"
             :disabled="isLoading"
+            class="form-input"
           />
         </div>
         
+        <!-- Medical History Field -->
         <div class="form-group">
-          <label for="historico">Histórico</label>
+          <label for="historico">Histórico Médico</label>
           <textarea 
             id="historico"
             v-model="patientForm.historico" 
             placeholder="Digite o histórico médico do paciente"
-            rows="3"
+            rows="4"
             :disabled="isLoading"
+            class="form-textarea"
           ></textarea>
         </div>
         
+        <!-- Form Actions -->
         <div class="form-actions">
-          <button type="button" @click="goBack" class="cancel-button" :disabled="isLoading">Cancelar</button>
-          <button type="submit" class="submit-button" :disabled="isLoading">
+          <button type="button" @click="goBack" class="btn-secondary" :disabled="isLoading">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" :disabled="isLoading">
+            <span v-if="isLoading" class="loading-spinner small"></span>
             {{ isLoading ? 'Criando...' : 'Criar Paciente' }}
           </button>
         </div>
@@ -207,292 +228,286 @@ const handleSubmit = async () => {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  font-family: Arial, sans-serif;
-  padding: 2vw;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 16px;
+  padding-bottom: 80px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 3vw;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-h1 {
-  font-size: 3vw;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+.header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.back-button {
-  padding: 1vw 2vw;
-  border: none;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  font-size: 1.2vw;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-}
-
-.back-button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-}
-
-.back-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.form-container {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.patient-form {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  padding: 3vw;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.error-message {
-  color: #ff6b6b;
-  font-size: 1vw;
-  background: rgba(255, 107, 107, 0.1);
-  padding: 1vw;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 107, 107, 0.3);
-  margin-bottom: 2vw;
-}
-
-.form-group {
-  margin-bottom: 2vw;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5vw;
-  font-size: 1.2vw;
-  font-weight: bold;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 1vw;
-  border: none;
-  border-radius: 8px;
-  font-size: 1vw;
-  background: rgba(255, 255, 255, 0.9);
-  color: #333;
-  transition: all 0.3s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  outline: none;
-  background: white;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-}
-
-.form-group input:disabled,
-.form-group select:disabled,
-.form-group textarea:disabled {
-  background: rgba(255, 255, 255, 0.7);
-  cursor: not-allowed;
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.form-actions {
-  display: flex;
-  gap: 2vw;
-  margin-top: 3vw;
-}
-
-.cancel-button,
-.submit-button {
-  flex: 1;
-  padding: 1.2vw 2vw;
-  border: none;
-  border-radius: 10px;
-  font-size: 1.2vw;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.cancel-button {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-}
-
-.cancel-button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-}
-
-.cancel-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.submit-button {
+.btn-primary {
   background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
   color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-.submit-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
-.submit-button:disabled {
-  background: rgba(255, 255, 255, 0.3);
+.btn-primary:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-/* Mobile Responsive Styles */
-@media (max-width: 768px) {
-  .create-patient-container {
-    padding: 4vw;
-  }
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  min-height: 44px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
 
-  .header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 3vw;
-  }
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
 
-  h1 {
-    font-size: 6vw;
-    text-align: center;
-  }
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
 
-  .back-button {
-    padding: 2.5vw 4vw;
-    font-size: 3.5vw;
-    border-radius: 15px;
-    align-self: center;
-  }
+.form-container {
+  max-width: 500px;
+  margin: 0 auto;
+}
 
-  .form-container {
-    max-width: 100%;
-  }
+.patient-form {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
 
-  .patient-form {
-    padding: 6vw;
-    border-radius: 20px;
-  }
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ff6b6b;
+  font-size: 14px;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  margin-bottom: 20px;
+}
 
-  .error-message {
-    font-size: 3vw;
-    padding: 2vw;
-    border-radius: 12px;
-    margin-bottom: 4vw;
-  }
+.error-icon {
+  font-size: 16px;
+}
 
-  .form-group {
-    margin-bottom: 4vw;
-  }
+.error-message p {
+  margin: 0;
+}
 
-  .form-group label {
-    font-size: 3.5vw;
-    margin-bottom: 1.5vw;
-  }
+.form-group {
+  margin-bottom: 20px;
+}
 
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    padding: 3vw;
-    font-size: 4vw;
-    border-radius: 12px;
-  }
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
 
-  .form-group textarea {
-    min-height: 120px;
-  }
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #333;
+  transition: all 0.3s ease;
+  min-height: 48px;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
 
-  .form-actions {
-    flex-direction: column;
-    gap: 3vw;
-    margin-top: 6vw;
-  }
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
 
-  .cancel-button,
-  .submit-button {
-    padding: 3vw 6vw;
-    font-size: 4vw;
-    border-radius: 15px;
-  }
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+  background: rgba(255, 255, 255, 0.7);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.form-actions .btn-primary,
+.form-actions .btn-secondary {
+  flex: 1;
+  justify-content: center;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-spinner.small {
+  width: 14px;
+  height: 14px;
+  border-width: 1.5px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @media (max-width: 480px) {
   .create-patient-container {
-    padding: 5vw;
+    padding: 12px;
+    padding-bottom: 80px;
   }
-
-  h1 {
-    font-size: 7vw;
+  
+  .header {
+    margin-bottom: 20px;
   }
-
-  .back-button {
-    padding: 3vw 5vw;
-    font-size: 4vw;
+  
+  .header h1 {
+    font-size: 24px;
   }
-
+  
   .patient-form {
-    padding: 8vw;
-    border-radius: 25px;
+    padding: 20px;
   }
-
-  .error-message {
-    font-size: 3.5vw;
-    padding: 3vw;
-    border-radius: 15px;
-  }
-
+  
   .form-group {
-    margin-bottom: 5vw;
+    margin-bottom: 16px;
   }
-
-  .form-group label {
-    font-size: 4vw;
+  
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 14px;
+    font-size: 16px;
+    min-height: 44px;
   }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    padding: 4vw;
-    font-size: 4.5vw;
-    border-radius: 15px;
+  
+  .form-textarea {
+    min-height: 80px;
   }
-
-  .form-group textarea {
-    min-height: 150px;
-  }
-
+  
   .form-actions {
-    gap: 4vw;
-    margin-top: 8vw;
+    margin-top: 24px;
+    gap: 8px;
   }
+  
+  .form-actions .btn-primary,
+  .form-actions .btn-secondary {
+    padding: 12px 8px;
+    font-size: 14px;
+  }
+}
 
-  .cancel-button,
-  .submit-button {
-    padding: 4vw 8vw;
-    font-size: 4.5vw;
-    border-radius: 20px;
+@media (max-width: 360px) {
+  .create-patient-container {
+    padding: 8px;
+  }
+  
+  .header h1 {
+    font-size: 20px;
+  }
+  
+  .patient-form {
+    padding: 16px;
+  }
+  
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 12px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+  
+  .form-actions .btn-primary,
+  .form-actions .btn-secondary {
+    padding: 12px 6px;
+    font-size: 13px;
   }
 }
 </style>

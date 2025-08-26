@@ -12,4 +12,3 @@ coverage
 dist
 Dockerfile
 Dockerfile.dev
-nginx.conf

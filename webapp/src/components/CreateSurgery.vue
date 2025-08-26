@@ -103,7 +103,6 @@ const handleSubmit = async () => {
     })
 
     await cirurgiasAPI.createCirurgia(formData, patient.value.id)
-          // Success message removed
     router.push('/patients')
   } catch (error) {
     console.error('Error creating surgery:', error)
@@ -116,24 +115,46 @@ const handleSubmit = async () => {
 
 <template>
   <div class="create-surgery-container">
+    <!-- Header -->
     <div class="header">
-      <h1>Registrar Nova Cirurgia</h1>
-      <button @click="goBack" class="back-button" :disabled="isLoading">← Voltar aos Pacientes</button>
+      <h1>Nova Cirurgia</h1>
+      <button @click="goBack" class="btn-secondary" :disabled="isLoading">
+        ← Voltar
+      </button>
     </div>
 
+    <!-- Patient Info Banner -->
     <div v-if="patient" class="patient-info-banner">
-      <h3>Cirurgia de:</h3>
-      <p><strong>Paciente:</strong> {{ patient.nome }}</p>
-      <p><strong>Data de Nascimento:</strong> {{ patient.dot }}</p>
-      <p><strong>Hospital:</strong> {{ patient.hospital }}</p>
+      <div class="patient-info-header">
+        <span class="patient-icon">👤</span>
+        <h3>Paciente</h3>
+      </div>
+      <div class="patient-details">
+        <div class="patient-detail">
+          <span class="detail-label">Nome:</span>
+          <span class="detail-value">{{ patient.nome }}</span>
+        </div>
+        <div class="patient-detail">
+          <span class="detail-label">Nascimento:</span>
+          <span class="detail-value">{{ patient.dot }}</span>
+        </div>
+        <div class="patient-detail">
+          <span class="detail-label">Hospital:</span>
+          <span class="detail-value">{{ patient.hospital }}</span>
+        </div>
+      </div>
     </div>
     
+    <!-- Form Container -->
     <div class="form-container">
       <form @submit.prevent="handleSubmit" class="surgery-form">
+        <!-- Error Message -->
         <div v-if="errorMessage" class="error-message">
-          {{ errorMessage }}
+          <span class="error-icon">⚠️</span>
+          <p>{{ errorMessage }}</p>
         </div>
 
+        <!-- Description Field -->
         <div class="form-group">
           <label for="descricao">Descrição da Cirurgia *</label>
           <textarea 
@@ -143,9 +164,11 @@ const handleSubmit = async () => {
             placeholder="Digite a descrição da cirurgia"
             rows="4"
             :disabled="isLoading"
+            class="form-textarea"
           ></textarea>
         </div>
         
+        <!-- Date Field -->
         <div class="form-group">
           <label for="data">Data da Cirurgia *</label>
           <input 
@@ -154,40 +177,60 @@ const handleSubmit = async () => {
             type="date" 
             required
             :disabled="isLoading"
+            class="form-input"
           />
         </div>
         
+        <!-- Photos Field -->
         <div class="form-group">
           <label for="fotos">Fotos (opcional)</label>
-          <input 
-            id="fotos"
-            type="file" 
-            multiple
-            accept="image/*"
-            @change="handleFileUpload"
-            :disabled="isLoading"
-          />
+          <div class="file-upload-container">
+            <input 
+              id="fotos"
+              type="file" 
+              multiple
+              accept="image/*"
+              @change="handleFileUpload"
+              :disabled="isLoading"
+              class="file-input"
+            />
+            <label for="fotos" class="file-upload-label">
+              <span class="upload-icon">📷</span>
+              <span class="upload-text">Selecionar Fotos</span>
+            </label>
+          </div>
+          
+          <!-- Uploaded Files Info -->
           <div v-if="surgeryForm.fotos.length > 0" class="uploaded-files">
-            <p><strong>Arquivos selecionados ({{ surgeryForm.fotos.length }}):</strong></p>
+            <div class="uploaded-files-header">
+              <span class="files-count">{{ surgeryForm.fotos.length }} foto(s) selecionada(s)</span>
+              <button @click="clearAllImages" type="button" class="clear-all-button">
+                <span class="clear-icon">🗑️</span>
+                Limpar
+              </button>
+            </div>
             
+            <!-- Image Preview -->
             <div v-if="imageUrls.length > 0" class="image-preview">
-              <div class="image-preview-header">
-                <p><strong>Visualização das imagens:</strong></p>
-                <button @click="clearAllImages" type="button" class="clear-all-button">Limpar Todas</button>
-              </div>
               <div class="image-grid">
                 <div v-for="(url, index) in imageUrls" :key="index" class="image-item">
-                  <button @click="removeImage(index)" type="button" class="remove-image-button">×</button>
-                  <img :src="url" :alt="`Imagem ${index + 1}`" class="image-item-img" />
+                  <button @click="removeImage(index)" type="button" class="remove-image-button">
+                    <span class="remove-icon">×</span>
+                  </button>
+                  <img :src="url" :alt="`Imagem ${index + 1}`" class="image-preview-img" />
                 </div>
               </div>
             </div>
           </div>
         </div>
         
+        <!-- Form Actions -->
         <div class="form-actions">
-          <button type="button" @click="goBack" class="cancel-button" :disabled="isLoading">Cancelar</button>
-          <button type="submit" class="submit-button" :disabled="isLoading">
+          <button type="button" @click="goBack" class="btn-secondary" :disabled="isLoading">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" :disabled="isLoading">
+            <span v-if="isLoading" class="loading-spinner small"></span>
             {{ isLoading ? 'Agendando...' : 'Agendar Cirurgia' }}
           </button>
         </div>
@@ -201,194 +244,312 @@ const handleSubmit = async () => {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  font-family: Arial, sans-serif;
-  padding: 2vw;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 16px;
+  padding-bottom: 80px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 3vw;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-h1 {
-  font-size: 3vw;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+.header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.back-button {
-  padding: 1vw 2vw;
+.btn-primary {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
   background: rgba(255, 255, 255, 0.2);
   color: white;
-  font-size: 1.2vw;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   backdrop-filter: blur(10px);
+  min-height: 44px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-.back-button:hover:not(:disabled) {
+.btn-secondary:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
 }
 
-.back-button:disabled {
+.btn-secondary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 .patient-info-banner {
-  min-width: 10vw;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  padding: 2vw;
-  margin-bottom: 3vw;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  margin: 0 auto 3vw auto;
-  max-width: 600px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.patient-info-banner h3 {
-  font-size: 1.5vw;
-  margin-bottom: 1vw;
+.patient-info-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.patient-icon {
+  font-size: 20px;
+}
+
+.patient-info-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
   color: #ffd700;
 }
 
-.patient-info-banner p {
-  margin: 0.5vw 0;
-  font-size: 1.2vw;
+.patient-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.patient-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.patient-detail:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.detail-value {
+  font-size: 14px;
+  color: white;
+  text-align: right;
+  max-width: 60%;
+  word-break: break-word;
 }
 
 .form-container {
-  max-width: 600px;
+  max-width: 500px;
   margin: 0 auto;
 }
 
 .surgery-form {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  padding: 3vw;
+  border-radius: 16px;
+  padding: 24px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-
-  
 }
-.image-item-img{
-  width: auto;  
-  height: 100%;
-  object-fit: cover;
-}
-
-
-
 
 .error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: #ff6b6b;
-  font-size: 1vw;
+  font-size: 14px;
   background: rgba(255, 107, 107, 0.1);
-  padding: 1vw;
-  border-radius: 8px;
+  padding: 16px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 107, 107, 0.3);
-  margin-bottom: 2vw;
+  margin-bottom: 20px;
+}
+
+.error-icon {
+  font-size: 16px;
+}
+
+.error-message p {
+  margin: 0;
 }
 
 .form-group {
-  margin-bottom: 2vw;
-  margin-right: 1vw;
+  margin-bottom: 20px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5vw;
-  font-size: 1.2vw;
-  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.form-group input,
-.form-group textarea {
+.form-input,
+.form-textarea {
   width: 100%;
-  padding: 1vw;
+  padding: 16px;
   border: none;
-  border-radius: 8px;
-  font-size: 1vw;
-  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.95);
   color: #333;
   transition: all 0.3s ease;
+  min-height: 48px;
+  box-sizing: border-box;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
+.form-input:focus,
+.form-textarea:focus {
   outline: none;
   background: white;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
 }
 
-.form-group input:disabled,
-.form-group textarea:disabled {
+.form-input:disabled,
+.form-textarea:disabled {
   background: rgba(255, 255, 255, 0.7);
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
-.form-group textarea {
+.form-textarea {
   resize: vertical;
   min-height: 100px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.file-upload-container {
+  position: relative;
+  width: 100%;
+}
+
+.file-input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.file-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 80px;
+}
+
+.file-upload-label:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.upload-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.upload-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .uploaded-files {
-  margin-top: 1vw;
-  padding: 1vw;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-}
-
-.uploaded-files p {
-  margin: 0 0 0.5vw 0;
-  font-size: 0.9vw;
-}
-
-.uploaded-files ul {
-  margin: 0;
-  padding-left: 2vw;
-}
-
-.uploaded-files li {
-  font-size: 0.8vw;
-  margin: 0.2vw 0;
-}
-
-.image-preview {
-  margin-top: 2vw;
-  padding: 1.5vw;
+  margin-top: 16px;
+  padding: 16px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.image-preview-header {
+.uploaded-files-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1vw;
+  margin-bottom: 16px;
 }
 
-.image-preview-header p {
-  margin: 0;
-  font-size: 1vw;
+.files-count {
+  font-size: 14px;
+  font-weight: 600;
   color: #ffd700;
 }
 
 .clear-all-button {
-  padding: 0.5vw 1vw;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: rgba(255, 107, 107, 0.8);
   color: white;
-  font-size: 0.8vw;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .clear-all-button:hover {
@@ -396,36 +557,44 @@ h1 {
   transform: translateY(-1px);
 }
 
+.clear-icon {
+  font-size: 14px;
+}
+
+.image-preview {
+  margin-top: 16px;
+}
+
 .image-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5vw;
-  margin-top: 1vw;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
 }
 
 .image-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 2vw;
-  transition: all 0.3s ease;
   position: relative;
-  gap: 1vw;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.image-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .remove-image-button {
   position: absolute;
-  top: -0.5vw;
-  right: -0.5vw;
-  width: 2vw;
-  height: 2vw;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
   border: none;
   border-radius: 50%;
   background: rgba(255, 107, 107, 0.9);
   color: white;
-  font-size: 1.2vw;
+  font-size: 16px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -433,6 +602,9 @@ h1 {
   align-items: center;
   justify-content: center;
   z-index: 10;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .remove-image-button:hover {
@@ -440,368 +612,172 @@ h1 {
   transform: scale(1.1);
 }
 
-.image-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
+.remove-icon {
+  line-height: 1;
 }
 
-.image-item img {
-  width: 200px;
-  height: 200px;
+.image-preview-img {
+  width: 100%;
+  height: 120px;
   object-fit: cover;
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-
-.image-name {
-  font-size: 1vw;
-  text-align: center;
-  word-break: break-word;
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: 0.5vw;
+  display: block;
 }
 
 .form-actions {
   display: flex;
-  gap: 2vw;
-  margin-top: 3vw;
+  gap: 12px;
+  margin-top: 32px;
 }
 
-.cancel-button,
-.submit-button {
+.form-actions .btn-primary,
+.form-actions .btn-secondary {
   flex: 1;
-  padding: 1.2vw 2vw;
-  border: none;
-  border-radius: 10px;
-  font-size: 1.2vw;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  justify-content: center;
 }
 
-.cancel-button {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-.cancel-button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+.loading-spinner.small {
+  width: 14px;
+  height: 14px;
+  border-width: 1.5px;
 }
 
-.cancel-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.submit-button {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-  color: white;
-}
-
-.submit-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #ff5252 0%, #d63031 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.submit-button:disabled {
-  background: rgba(255, 255, 255, 0.3);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Mobile Responsive Styles */
-@media (max-width: 768px) {
-  .create-surgery-container {
-    padding: 4vw;
-  }
-
-  .header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 3vw;
-  }
-
-  h1 {
-    font-size: 6vw;
-    text-align: center;
-  }
-
-  .back-button {
-    padding: 2.5vw 4vw;
-    font-size: 3.5vw;
-    border-radius: 15px;
-    align-self: center;
-  }
-
-  .patient-info-banner {
-    padding: 4vw;
-    border-radius: 20px;
-    margin-bottom: 4vw;
-  }
-
-  .patient-info-banner h3 {
-    font-size: 4vw;
-    margin-bottom: 2vw;
-  }
-
-  .patient-info-banner p {
-    font-size: 3.5vw;
-  }
-
-  .form-container {
-    max-width: 100%;
-  }
-
-  .surgery-form {
-    padding: 6vw;
-    border-radius: 20px;
-  }
-
-  .error-message {
-    font-size: 3vw;
-    padding: 2vw;
-    border-radius: 12px;
-    margin-bottom: 4vw;
-  }
-
-  .form-group {
-    margin-bottom: 4vw;
-  }
-
-  .form-group label {
-    font-size: 3.5vw;
-    margin-bottom: 1.5vw;
-  }
-
-  .form-group input,
-  .form-group textarea {
-    padding: 3vw;
-    font-size: 4vw;
-    border-radius: 12px;
-  }
-
-  .form-group textarea {
-    min-height: 120px;
-  }
-
-  .uploaded-files {
-    margin-top: 2vw;
-    padding: 2vw;
-  }
-
-  .uploaded-files p {
-    font-size: 3vw;
-  }
-
-  .uploaded-files li {
-    font-size: 2.5vw;
-  }
-
-  .image-preview {
-    margin-top: 4vw;
-    padding: 3vw;
-    border-radius: 15px;
-  }
-
-  .image-preview-header {
-    flex-direction: column;
-    gap: 2vw;
-    align-items: stretch;
-  }
-
-  .image-preview-header p {
-    font-size: 3vw;
-    margin-bottom: 0;
-    text-align: center;
-  }
-
-  .clear-all-button {
-    padding: 1.5vw 3vw;
-    font-size: 2.5vw;
-    border-radius: 10px;
-  }
-
-  .image-grid {
-    gap: 3vw;
-    margin-top: 2vw;
-  }
-
-  .image-item {
-    padding: 3vw;
-    border-radius: 12px;
-    gap: 2vw;
-  }
-
-  .remove-image-button {
-    width: 4vw;
-    height: 4vw;
-    font-size: 2.5vw;
-    top: -1vw;
-    right: -1vw;
-  }
-
-  .image-item img {
-    width: 150px;
-    height: 150px;
-    border-radius: 10px;
-  }
-
-  .image-name {
-    font-size: 2.5vw;
-    margin-top: 1vw;
-  }
-
-  .form-actions {
-    flex-direction: column;
-    gap: 3vw;
-    margin-top: 6vw;
-  }
-
-  .cancel-button,
-  .submit-button {
-    padding: 3vw 6vw;
-    font-size: 4vw;
-    border-radius: 15px;
-  }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @media (max-width: 480px) {
   .create-surgery-container {
-    padding: 5vw;
+    padding: 12px;
+    padding-bottom: 80px;
   }
-
-  h1 {
-    font-size: 7vw;
+  
+  .header {
+    margin-bottom: 20px;
   }
-
-  .back-button {
-    padding: 3vw 5vw;
-    font-size: 4vw;
+  
+  .header h1 {
+    font-size: 24px;
   }
-
+  
   .patient-info-banner {
-    padding: 5vw;
-    border-radius: 25px;
+    padding: 16px;
+    margin-bottom: 20px;
   }
-
-  .patient-info-banner h3 {
-    font-size: 4.5vw;
+  
+  .patient-info-header h3 {
+    font-size: 16px;
   }
-
-  .patient-info-banner p {
-    font-size: 4vw;
-  }
-
-  .surgery-form {
-    padding: 8vw;
-    border-radius: 25px;
-  }
-
-  .error-message {
-    font-size: 3.5vw;
-    padding: 3vw;
-    border-radius: 15px;
-  }
-
-  .form-group {
-    margin-bottom: 5vw;
-  }
-
-  .form-group label {
-    font-size: 4vw;
-  }
-
-  .form-group input,
-  .form-group textarea {
-    padding: 4vw;
-    font-size: 4.5vw;
-    border-radius: 15px;
-  }
-
-  .form-group textarea {
-    min-height: 150px;
-  }
-
-  .uploaded-files {
-    margin-top: 3vw;
-    padding: 3vw;
-  }
-
-  .uploaded-files p {
-    font-size: 3.5vw;
-  }
-
-  .uploaded-files li {
-    font-size: 3vw;
-  }
-
-  .image-preview {
-    margin-top: 5vw;
-    padding: 4vw;
-    border-radius: 20px;
-  }
-
-  .image-preview-header {
+  
+  .patient-detail {
     flex-direction: column;
-    gap: 3vw;
-    align-items: stretch;
+    align-items: flex-start;
+    gap: 4px;
   }
-
-  .image-preview-header p {
-    font-size: 3.5vw;
-    margin-bottom: 0;
-    text-align: center;
+  
+  .detail-value {
+    max-width: 100%;
+    text-align: left;
   }
-
-  .clear-all-button {
-    padding: 2vw 4vw;
-    font-size: 3vw;
-    border-radius: 12px;
+  
+  .surgery-form {
+    padding: 20px;
   }
-
+  
+  .form-group {
+    margin-bottom: 16px;
+  }
+  
+  .form-input,
+  .form-textarea {
+    padding: 14px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+  
+  .form-textarea {
+    min-height: 80px;
+  }
+  
+  .file-upload-label {
+    padding: 16px;
+    min-height: 70px;
+  }
+  
+  .upload-icon {
+    font-size: 20px;
+  }
+  
+  .upload-text {
+    font-size: 13px;
+  }
+  
   .image-grid {
-    gap: 4vw;
-    margin-top: 3vw;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
   }
-
-  .image-item {
-    padding: 4vw;
-    border-radius: 15px;
-    gap: 3vw;
+  
+  .image-preview-img {
+    height: 100px;
   }
-
-  .remove-image-button {
-    width: 5vw;
-    height: 5vw;
-    font-size: 3vw;
-    top: -1.5vw;
-    right: -1.5vw;
-  }
-
-  .image-item img {
-    width: 120px;
-    height: 120px;
-    border-radius: 12px;
-  }
-
-  .image-name {
-    font-size: 3vw;
-    margin-top: 1.5vw;
-  }
-
+  
   .form-actions {
-    gap: 4vw;
-    margin-top: 8vw;
+    margin-top: 24px;
+    gap: 8px;
   }
+  
+  .form-actions .btn-primary,
+  .form-actions .btn-secondary {
+    padding: 12px 8px;
+    font-size: 14px;
+  }
+}
 
-  .cancel-button,
-  .submit-button {
-    padding: 4vw 8vw;
-    font-size: 4.5vw;
-    border-radius: 20px;
+@media (max-width: 360px) {
+  .create-surgery-container {
+    padding: 8px;
+  }
+  
+  .header h1 {
+    font-size: 20px;
+  }
+  
+  .patient-info-banner {
+    padding: 12px;
+  }
+  
+  .surgery-form {
+    padding: 16px;
+  }
+  
+  .form-input,
+  .form-textarea {
+    padding: 12px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+  
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+  
+  .image-preview-img {
+    height: 80px;
+  }
+  
+  .form-actions .btn-primary,
+  .form-actions .btn-secondary {
+    padding: 12px 6px;
+    font-size: 13px;
   }
 }
 </style>

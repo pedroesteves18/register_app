@@ -1,12 +1,10 @@
-version: '3.8'
-
 services:
   frontend:
     build:
       context: ./webapp
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "0.0.0.0:80:80"
     depends_on:
       - backend
     networks:
@@ -17,15 +15,24 @@ services:
       context: ./api
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "0.0.0.0:8001:8001"
     environment:
       - NODE_ENV=production
-      - PORT=3000
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_PORT=${POSTGRES_PORT}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PORT=${PORT}
+      - ROUNDS=${ROUNDS}
+      - JWT_SECRET=${JWT_SECRET}
+      - DEFAULT_USER_ACCESS=${DEFAULT_USER_ACCESS}
+      - DEFAULT_USER_2=${DEFAULT_USER_2}
+      - ADM_SECRET=${ADM_SECRET}
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
     depends_on:
       - db
     networks:

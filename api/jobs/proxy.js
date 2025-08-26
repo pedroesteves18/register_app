@@ -1,4 +1,4 @@
-import Router from "router";    
+import { Router } from "express";    
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 

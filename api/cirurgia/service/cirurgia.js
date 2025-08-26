@@ -50,6 +50,11 @@ const cirurgiaService = {
 
         // Handle existing photos that should be kept
         if (data.existingFotos && Array.isArray(data.existingFotos)) {
+            // Find photos that were removed and delete them from S3
+            const removedPhotos = beforeUpdate.fotos.filter(photo => !data.existingFotos.includes(photo))
+            if (removedPhotos.length > 0) {
+                await cirurgiaService.deletePictures(removedPhotos)
+            }
             totalUrls = data.existingFotos
         }
 
