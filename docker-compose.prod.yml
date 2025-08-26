@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: register_app_db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-register_app}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    ports:
+      - "5432:5432"
+    networks:
+      - register_app_network
+    restart: unless-stopped
+
+  # Backend API
+  backend:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: register_app_backend
+    environment:
+      # Database
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-register_app}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      
+      # Server
+      PORT: 8001
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_here}
+      
+      # AWS S3
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME}
+      
+      # Backup Configuration
+      BACKUP_DIR: /backups
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+      S3_BACKUP_BUCKET: ${S3_BACKUP_BUCKET:-${AWS_BUCKET_NAME}}
+      S3_BACKUP_PREFIX: ${S3_BACKUP_PREFIX:-backups}
+      ENABLE_DAILY_BACKUP: ${ENABLE_DAILY_BACKUP:-true}
+      TZ: ${TZ:-UTC}
+      
+      # Node Environment
+      NODE_ENV: production
+    ports:
+      - "8001:8001"
+    depends_on:
+      - postgres
+    volumes:
+      - ./backups:/backups
+    networks:
+      - register_app_network
+    restart: unless-stopped
+
+  # Frontend (Nginx)
+  frontend:
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile
+    container_name: register_app_frontend
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8001}
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    networks:
+      - register_app_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  register_app_network:
+    driver: bridge 
