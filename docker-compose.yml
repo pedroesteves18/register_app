@@ -1,58 +1,93 @@
 services:
-  frontend:
-    build:
-      context: ./webapp
-      dockerfile: Dockerfile
+  # PostgreSQL Database
+  db:
+    image: postgres:17
+    container_name: register_app_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-register_app}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
     ports:
-      - "0.0.0.0:80:80"
-    depends_on:
-      - backend
+      - "5432:5432"
     networks:
       - register_app_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-register_app}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # Backend API
   backend:
     build:
       context: ./api
       dockerfile: Dockerfile
+    container_name: register_app_backend
+    environment:
+      # Database
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-register_app}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      
+      # Server
+      PORT: ${PORT:-8001}
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_here}
+      ROUNDS: ${ROUNDS:-10}
+      DEFAULT_USER_ACCESS: ${DEFAULT_USER_ACCESS:-admin}
+      DEFAULT_USER_2: ${DEFAULT_USER_2:-user}
+      ADM_SECRET: ${ADM_SECRET:-admin_secret}
+      
+      # AWS S3
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME}
+      
+      # Backup Configuration
+      BACKUP_DIR: /backups
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+      S3_BACKUP_BUCKET: ${S3_BACKUP_BUCKET:-${AWS_BUCKET_NAME}}
+      S3_BACKUP_PREFIX: ${S3_BACKUP_PREFIX:-backups}
+      ENABLE_DAILY_BACKUP: ${ENABLE_DAILY_BACKUP:-true}
+      TZ: ${TZ:-UTC}
+      
+      # Node Environment
+      NODE_ENV: production
     ports:
       - "0.0.0.0:8001:8001"
-    environment:
-      - NODE_ENV=production
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - PORT=${PORT}
-      - ROUNDS=${ROUNDS}
-      - JWT_SECRET=${JWT_SECRET}
-      - DEFAULT_USER_ACCESS=${DEFAULT_USER_ACCESS}
-      - DEFAULT_USER_2=${DEFAULT_USER_2}
-      - ADM_SECRET=${ADM_SECRET}
-      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_REGION=${AWS_REGION}
-      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
-      - ENABLE_DAILY_BACKUP=${ENABLE_DAILY_BACKUP}
     depends_on:
-      - db
-    networks:
-      - register_app_network
-
-  db:
-    image: postgres:17
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      db:
+        condition: service_healthy
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
     networks:
       - register_app_network
-   
-volumes: 
+    restart: unless-stopped
+
+  # Frontend (Nginx)
+  frontend:
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile.prod
+    container_name: register_app_frontend
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8001}
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    networks:
+      - register_app_network
+    restart: unless-stopped
+
+volumes:
   postgres_data:
 
 networks:

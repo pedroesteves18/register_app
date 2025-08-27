@@ -18,6 +18,6 @@ COPY . .
 # Create backup directory
 RUN mkdir -p /backups
 
-EXPOSE 3000
+EXPOSE 8001
 
 CMD ["node", "app.js"]
